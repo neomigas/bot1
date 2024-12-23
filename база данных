@@ -1,0 +1,131 @@
+import asyncio
+import sqlite3
+from lib2to3.fixes.fix_input import context
+
+from pyexpat.errors import messages
+
+connection = sqlite3.connect("database.db")
+cursor = connection.cursor()
+# Налаштування бази даних
+def setup_database():
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
+
+    # Створення таблиці користувачів
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        chat_id INTEGER NOT NULL UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    # Створення таблиці бронювань
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS bookings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date_start TEXT NOT NULL,
+        date_end TEXT NOT NULL,
+        guests INTEGER NOT NULL,
+        room_type TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+    )
+    """)
+    connection.commit()
+    connection.close()
+    print("База даних успішно налаштована.")
+
+setup_database()
+
+def add_user(username, chat_id):
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
+    try:
+        cursor.execute("""
+        INSERT OR IGNORE INTO users (username, chat_id)
+        VALUES (?, ?)
+        """, (username, chat_id))
+        connection.commit()
+        print(f"Користувач {username} успішно доданий.")
+    except sqlite3.Error as e:
+        print(f"Помилка при додаванні користувача: {e}")
+    finally:
+        connection.close()
+
+connection.commit()
+connection.close()
+
+
+def add_booking(chat_id, date_start, date_end, guests, room_type):
+    connection = sqlite3.connect("database.db")
+    cursor = connection.cursor()
+    try:
+        cursor.execute("SELECT id FROM users WHERE chat_id = ?", (chat_id,))
+        user_id = cursor.fetchone()
+        if user_id:
+            user_id = user_id[0]
+            cursor.execute("""
+            INSERT INTO bookings (user_id, date_start, data_end, guests, room_type)
+            VALUES(?, ?, ?, ?, ?)
+            """, (user_id, date_start, date_end, guests, room_type))
+            connection.commit()
+            print("все хорошо00000000000000")
+        else:
+            print("не найдено")
+    except sqlite3.Error as e:
+        print(f"Помилка при додаванні користувача: {e}")
+    finally:
+        connection.close()
+
+
+
+
+#_______________________________________________________________________
+                   """ async def room_type(update, context):
+                             chat_id=update.effective_user.id
+                             context.user_data['room_type'] = update.message.text
+                         #збереження бронювання в базі
+                        add_booking(
+                            chat_id
+                                   context.user_data['date_start'],
+                                       context.user_data['date_end'],
+                                            context.user_data['guests'],
+                                            context.user_data['room_type'],) """
+
+```
+async def broadcast_message(update,context):
+    users = get_all_users()
+    message ="spam hahahahahaahahha"
+    successful = 0
+    failed = 0
+
+    for chat_id in users:
+        try:
+            await context.bot.send_message(chat_i=chat_id, text=message)
+            successful += 1
+        except Exception as e:
+            print(f" no send message {chat_id}: {e}")
+            failed +=1
+        await asyncio.sleep(0.1) #додати затримку для уникнення лимиту телеграма
+    await update.message.reply_text(f"newsletter end. very good {successful}, unsuccessful:{failed}")
+
+
+
+#"    elif query.data == "services":
+#        await query.message.reply_text(
+    #           "У нас доступны следующие услуги:\n"
+ #           "- Завтраки\n"
+#            "- Бассейн и SPA\n"
+ #           "- Трансфер из/в аэропорт"
+    #     )
+#
+ #   elif query.data == "contacts":
+ #       await query.message.reply_text(
+ #           "Наши контактные данные:\n"
+ #           "- Телефон: +123456789\n"
+#            "- Электронная почта: contact@dreamstay.com\n"
+ #           "- Адрес: ул. Мира, 10, Киев"
+      #  )"
